@@ -17,7 +17,7 @@ filenamevec=[string("./ppm_",a[1],"_alt_",a[2],".h5") for a in parmsvec]
 
 @everywhere function runwaterprofile(n_current,ppmadd,peakalt,dtlist,filename)
     n_internal=deepcopy(n_current)
-    
+
     waterppm=1e-6*map(x->ppmadd.*exp(-((x-peakalt)/12.5)^2),alt[2:end-1]/1e5)+H2Oinitfrac
     waterprofile=waterppm.*map(z->n_tot(n_internal,z),alt[2:end-1])
     ##modify the water profile stored in n_internal
@@ -31,7 +31,7 @@ end
 
 @everywhere function runprofile(n_current, dtlist, filename)
     n_internal=deepcopy(n_current)
-    
+
     elapsed_time=0.0
 
     n_internal_mat=Array(Float64,length(alt)-2,length(collect(keys(n_internal))));
@@ -188,4 +188,3 @@ pmap(x->println(string("parmsvec[i][1]=",x[1],", parmsvec[i][2]=",x[2],", filena
 ## this produces a small change but it's not significant. Only
 ## removing water from an initially wet upper atmosphere produces net
 ## oxidation.
-
