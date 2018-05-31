@@ -93,12 +93,12 @@ end
     Hfluxes=fill(0.,timelength)
     n_current=read_ncurrent_from_file(readfile,string("n_current/init"))
     Hfluxes[1]=(n_current[:H][end]*speciesbcs(:H)[2,2]
-                  +n_current[:H2][end]*speciesbcs(:H2)[2,2])
+                  +2*n_current[:H2][end]*speciesbcs(:H2)[2,2])
     for i in 1:(timelength-1)
         #println(i)
         n_current=read_ncurrent_from_file(readfile,string("n_current/iter_",i))
         Hfluxes[i+1]=(n_current[:H][end]*speciesbcs(:H)[2,2]
-                      +n_current[:H2][end]*speciesbcs(:H2)[2,2])
+                      +2*n_current[:H2][end]*speciesbcs(:H2)[2,2])
     end
     Hfluxes
 end
