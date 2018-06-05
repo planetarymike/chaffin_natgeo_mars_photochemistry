@@ -103,7 +103,7 @@ end
     mydata = read(mydset)
     timelength = length(mydata["n_current"]["timelist"])+1
     close(mydset)
-  
+
     Hfluxes=fill(0.,timelength)
     n_current=read_ncurrent_from_file(readfile,string("n_current/init"))
     Hfluxes[1]=(n_current[:H][end]*speciesbcs(:H)[2,2]
@@ -179,12 +179,15 @@ for lp in 1:length(parmsvec)
     writewaterprof[ippm,ialt,:]=[parmsvec[lp],waterprofs[lp];]
 end
 
-
-h5write("./H_esc_flux_history.h5","fluxes/fluxvals",writeHfluxes)
-h5write("./H_esc_flux_history.h5","fluxes/times",h5read("./ppm_20_alt_20.h5","n_current/timelist"))
-h5write("./H_esc_flux_history.h5","waterprofs/ppm",writewaterprof)
-h5write("./H_esc_flux_history.h5","waterprofs/alt",alt[2:end-1])
-
+# write out the H fluxes =======================================================
+println("Writing H esc file")
+hfile = "./H_esc_flux_history.h5"
+h5open(hfile, isfile(hfile) ? "r+" : "w") do file
+   write(file,"fluxes/fluxvals",writeHfluxes)
+   write(file,"fluxes/times",h5read("./ppm_20_alt_20.h5","n_current/timelist"))
+   write(file,"waterprofs/ppm",writewaterprof)
+   write(file,"waterprofs/alt",alt[2:end-1])
+end
 
 ##this runs the simulation for removing water from the system, to
 ##answer the final reviewer objection and show that an imbalance is
