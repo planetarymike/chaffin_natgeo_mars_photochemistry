@@ -21,9 +21,9 @@
 using PyPlot
 using HDF5, JLD
 
-#################################
-##########Species LIST###########
-#################################
+################################################################################
+################################# Species LIST #################################
+################################################################################
 
 #array of symbols for each species
 const fullspecieslist = [:CO2, :O2, :O3, :H2, :OH, :HO2, :H2O, :H2O2, :O, :CO,
@@ -54,9 +54,9 @@ const Jratelist=[:JCO2ion,:JCO2toCOpO,:JCO2toCOpO1D,:JO2toOpO,:JO2toOpO1D,
                  :JH2O2to2OH,:JH2O2toHO2pH,:JH2O2toH2OpO1D];
 
 
-##############################################
-######Load Converged Test Case from File######
-##############################################
+################################################################################
+###################### Load Converged Test Case from File ######################
+################################################################################
 
 # the test case was created by hand by Mike Chaffin and saved for automated use.
 # Change following line as needed depending on local machine
@@ -89,18 +89,18 @@ function write_ncurrent(n_current, filename)
 end
 
 
-###########################
-#discretization parameters#
-###########################
+################################################################################
+########################### discretization parameters ##########################
+################################################################################
 
 #set altitude grid and transport equilibrium from file
 const zmin=alt[1]
 const zmax=alt[end];
 const dz=alt[2]-alt[1];
 
-####################################
-##########REACTION NETWORK##########
-####################################
+################################################################################
+############################### REACTION NETWORK ###############################
+################################################################################
 
 #function to replace three body rates with the recommended expression
 threebody(k0, kinf) = :($k0*M/(1+$k0*M/$kinf)*0.6^((1+(log10($k0*M/$kinf))^2)^-1))
@@ -182,9 +182,9 @@ reactionnet=[
              [[:CO2pl,:H2],[:CO2,:H,:H],:(8.7e-10)]
              ]
 
-#############################
-####FUNDAMENTAL CONSTANTS####
-#############################
+################################################################################
+############################# FUNDAMENTAL CONSTANTS ############################
+################################################################################
 
 # fundamental constants
 const boltzmannK=1.38e-23;    # J/K
@@ -195,9 +195,9 @@ const mH=1.67e-27;            # kg
 const marsM=0.1075*5.972e24;  # kg
 const radiusM=3396e5;         # cm
 
-#############################
-########TEMPERATURE##########
-#############################
+################################################################################
+################################ TEMPERATURE ###################################
+################################################################################
 
 function Tspl(z::Float64, lapserate=-1.4e-5, Tsurf=211, ztropo=50e5, zexo=200e5, Texo=300)
     # DO NOT MODIFY! If you want to change the temperature, define a
@@ -245,9 +245,9 @@ end
 Temp(z::Float64) = Tpiecewise(z)
 
 
-###############################
-#####AUX DENSITY FUNCTIONS#####
-###############################
+################################################################################
+############################# AUX DENSITY FUNCTIONS ############################
+################################################################################
 
 n_alt_index=Dict([z=>clamp((i-1),1, length(alt)-2) for (i, z) in enumerate(alt)])
 # used in combination with n_current. Gets the index corresponding to a given altitude
@@ -270,10 +270,9 @@ function meanmass(n_current, z)
 end
 
 
-#####################################
-########BOUNDARY CONDITIONS##########
-#####################################
-
+################################################################################
+############################# BOUNDARY CONDITIONS ##############################
+################################################################################
 
 # water saturation vapor pressure, T in K, Psat in mmHg
 # (from Washburn 1924)
@@ -368,9 +367,9 @@ function speciesbcs(species)
 end
 
 
-##############################
-####DIFFUSION COEFFICIENTS####
-##############################
+################################################################################
+############################ DIFFUSION COEFFICIENTS ############################
+################################################################################
 
 function Keddy(n_current, z)
     # eddy diffusion coefficient, stolen from Krasnopolsky (1993).
@@ -399,9 +398,9 @@ Dcoef(z, species::Symbol, n_current) = Dcoef(Temp(z),n_tot(n_current, z),species
 thermaldiff(species) = get(Dict(:H=>-0.25,:H2=>-0.25,:HD=>-0.25,:D2=>-0.25,
                                 :He=>-0.25), species, 0)
 
-###############################
-##########TRANSPORT############
-###############################
+################################################################################
+################################## TRANSPORT ###################################
+################################################################################
 
 # scale height at a given altitude
 function scaleH(z, T::Float64, mm::Real)
@@ -651,9 +650,9 @@ function boundaryconditions(species, dz, n_current)
 end
 
 
-########################
-#######CHEMISTRY########
-########################
+################################################################################
+################################## CHEMISTRY ###################################
+################################################################################
 
 # TODO: again, the Any[] syntax might be removable once [[],[]] concatenation
 # is diabled rather than depracated
@@ -816,9 +815,9 @@ function chemical_jacobian(chemnetwork, transportnetwork, specieslist, dspeciesl
     return (ivec, jvec, Expr(:vcat, tvec...))
 end
 
-################################################
-########COMBINED CHEMISTRY AND TRANSPORT########
-################################################
+################################################################################
+####################### COMBINED CHEMISTRY AND TRANSPORT #######################
+################################################################################
 
 # We now have objects that return the list of indices and coefficients
 # for transport, assuming no other species in the atmosphere
@@ -1233,9 +1232,9 @@ function plotatm()
 end
 
 
-####################################
-####PHOTOCHEMICAL CROSS SECTIONS####
-####################################
+################################################################################
+######################### PHOTOCHEMICAL CROSS SECTIONS #########################
+################################################################################
 
 # Change following line as needed depending on local machine
 xsecfolder="/home/mike/Documents/Mars/Photochemistry/Photochemical Data/From_Justin/uv/uvxsect/";
@@ -1698,7 +1697,9 @@ function timeupdate(mytime)
     ## show()
     ## yield()
 end
-
+################################################################################
+############################### CONVERGENCE CODE ###############################
+################################################################################
 # Extra code to reach convergence to equilibrium over millions of years
 # STANDARD WATER CASE ----------------------------------------------------------
 # n_current[:H2O]=H2Oinitfrac.*map(z->n_tot(n_current, z),alt[2:end-1])
