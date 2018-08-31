@@ -60,7 +60,7 @@ const Jratelist=[:JCO2ion,:JCO2toCOpO,:JCO2toCOpO1D,:JO2toOpO,:JO2toOpO1D,
 
 # the test case was created by hand by Mike Chaffin and saved for automated use.
 # Change following line as needed depending on local machine
-readfile = "/home/emc/GoogleDrive/Phys/LASP/chaffin_natgeo_mars_photochemistry/converged_standardwater.h5"
+readfile = "/home/mike/Documents/Mars/Photochemistry/coupled_transport_and_chemistry/revision2/converged_standardwater.h5"
 const alt=h5read(readfile,"n_current/alt")
 
 function get_ncurrent(readfile)
@@ -1238,7 +1238,7 @@ end
 ####################################
 
 # Change following line as needed depending on local machine
-xsecfolder="/home/emc/GoogleDrive/Phys/LASP/chaffin_natgeo_mars_photochemistry/uvxsect/";
+xsecfolder="/home/mike/Documents/Mars/Photochemistry/Photochemical Data/From_Justin/uv/uvxsect/";
 
 function readandskip(a, delim::Char, T::Type; skipstart=0)
     # function to read in data from a file, skipping zero or more lines at
@@ -1412,7 +1412,7 @@ ohO1Dxdata = readandskip(xsecfolder*"binnedOHo1D.csv",',',Float64, skipstart=4)
 
 #SOLAR FLUX
 # Change following line as needed depending on local machine
-const solarflux=readandskip("/home/emc/GoogleDrive/Phys/LASP/chaffin_natgeo_mars_photochemistry/marssolarphotonflux.dat",'\t',Float64,skipstart=4)[1:2000,:]
+const solarflux=readandskip("/home/mike/Documents/Mars/Photochemistry/Photochemical Data/marssolarphotonflux.dat",'\t',Float64,skipstart=4)[1:2000,:]
 solarflux[:,2] = solarflux[:,2]/2
 
 
