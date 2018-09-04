@@ -21,9 +21,9 @@
 using PyPlot
 using HDF5, JLD
 
-#################################
-##########Species LIST###########
-#################################
+################################################################################
+################################# Species LIST #################################
+################################################################################
 
 #array of symbols for each species
 const fullspecieslist = [:CO2, :O2, :O3, :H2, :OH, :HO2, :H2O, :H2O2, :O, :CO,
@@ -33,8 +33,8 @@ const nochemspecies = [:N2, :Ar, :CO2pl,:H2O];
 const chemspecies = setdiff(specieslist, nochemspecies);
 const notransportspecies = [:CO2pl,:H2O];
 const transportspecies = setdiff(specieslist, notransportspecies);
-const speciesmolmasslist = Dict(:CO2=>44, :O2=>32, :O3=>48, :H2=>2, :OH=>9,
-                                :HO2=>17, :H2O=>18, :H2O2=>34, :O=>16, :CO=>28,
+const speciesmolmasslist = Dict(:CO2=>44, :O2=>32, :O3=>48, :H2=>2, :OH=>17,
+                                :HO2=>33, :H2O=>18, :H2O2=>34, :O=>16, :CO=>28,
                                 :O1D=>16, :H=>1, :N2=>28, :Ar=>40, :CO2pl=>44,
                                 :HOCO=>45)
 
@@ -54,9 +54,9 @@ const Jratelist=[:JCO2ion,:JCO2toCOpO,:JCO2toCOpO1D,:JO2toOpO,:JO2toOpO1D,
                  :JH2O2to2OH,:JH2O2toHO2pH,:JH2O2toH2OpO1D];
 
 
-##############################################
-######Load Converged Test Case from File######
-##############################################
+################################################################################
+###################### Load Converged Test Case from File ######################
+################################################################################
 
 # the test case was created by hand by Mike Chaffin and saved for automated use.
 # Change following line as needed depending on local machine
@@ -77,7 +77,7 @@ end
 n_current=get_ncurrent(readfile)
 
 function write_ncurrent(n_current, filename)
-    n_current_mat=Array(Float64, length(alt)-2, length(collect(keys(n_current))));
+    n_current_mat=Array{Float64}(length(alt)-2, length(collect(keys(n_current))));
     for ispecies in [1:length(collect(keys(n_current)));]
         for ialt in [1:length(alt)-2;]
             n_current_mat[ialt, ispecies]=n_current[collect(keys(n_current))[ispecies]][ialt]
@@ -89,36 +89,18 @@ function write_ncurrent(n_current, filename)
 end
 
 
-
-
-###########################
-#discretization parameters#
-###########################
+################################################################################
+########################### discretization parameters ##########################
+################################################################################
 
 #set altitude grid and transport equilibrium from file
 const zmin=alt[1]
 const zmax=alt[end];
 const dz=alt[2]-alt[1];
 
-# TODO: remove this stuff?
-## #ALTITUDE grid
-## const zmin=0e5;
-## const zmax=200e5;
-## const dz=2e5;
-
-## #this altitude grid includes the top and bottom points that are set by
-## #the boundary conditions. Numerically, we solve for length(alt)-2
-## #densities for each species.
-## #Altitudes INCREASE with increasing index.
-## const alt=[zmin:dz:zmax];
-
-#initial timestep
-dt=360.0;
-
-
-####################################
-##########REACTION NETWORK##########
-####################################
+################################################################################
+############################### REACTION NETWORK ###############################
+################################################################################
 
 #function to replace three body rates with the recommended expression
 threebody(k0, kinf) = :($k0*M/(1+$k0*M/$kinf)*0.6^((1+(log10($k0*M/$kinf))^2)^-1))
@@ -200,9 +182,9 @@ reactionnet=[
              [[:CO2pl,:H2],[:CO2,:H,:H],:(8.7e-10)]
              ]
 
-#############################
-####FUNDAMENTAL CONSTANTS####
-#############################
+################################################################################
+############################# FUNDAMENTAL CONSTANTS ############################
+################################################################################
 
 # fundamental constants
 const boltzmannK=1.38e-23;    # J/K
@@ -213,9 +195,9 @@ const mH=1.67e-27;            # kg
 const marsM=0.1075*5.972e24;  # kg
 const radiusM=3396e5;         # cm
 
-#############################
-########TEMPERATURE##########
-#############################
+################################################################################
+################################ TEMPERATURE ###################################
+################################################################################
 
 function Tspl(z::Float64, lapserate=-1.4e-5, Tsurf=211, ztropo=50e5, zexo=200e5, Texo=300)
     # DO NOT MODIFY! If you want to change the temperature, define a
@@ -263,9 +245,9 @@ end
 Temp(z::Float64) = Tpiecewise(z)
 
 
-###############################
-#####AUX DENSITY FUNCTIONS#####
-###############################
+################################################################################
+############################# AUX DENSITY FUNCTIONS ############################
+################################################################################
 
 n_alt_index=Dict([z=>clamp((i-1),1, length(alt)-2) for (i, z) in enumerate(alt)])
 # used in combination with n_current. Gets the index corresponding to a given altitude
@@ -288,10 +270,9 @@ function meanmass(n_current, z)
 end
 
 
-#####################################
-########BOUNDARY CONDITIONS##########
-#####################################
-
+################################################################################
+############################# BOUNDARY CONDITIONS ##############################
+################################################################################
 
 # water saturation vapor pressure, T in K, Psat in mmHg
 # (from Washburn 1924)
@@ -311,11 +292,11 @@ end
 
 # TODO: is this redundant with lower plot?
 # plot the initial H2O profile
-clf()
-plot(H2Oinitfrac/1e-6, alt[2:end-1]/1e5, color="blue",linewidth=2)
-ylim(0, 100)
-xlabel("Volume Mixing Ratio [ppm]")
-ylabel("Altitude [km]")
+# clf()
+# plot(H2Oinitfrac/1e-6, alt[2:end-1]/1e5, color="blue",linewidth=2)
+# ylim(0, 100)
+# xlabel("Volume Mixing Ratio [ppm]")
+# ylabel("Altitude [km]")
 
 
 H2Olowfrac = H2Osatfrac[1:findfirst(H2Osatfrac, minimum(H2Osatfrac))]
@@ -334,14 +315,14 @@ detachedlayer = 1e-6*map(x->80.*exp(-((x-60)/12.5)^2),alt[2:end-1]/1e5)+H2Oinitf
 
 # TODO: keep this plot only?
 # Plot initial water profile with detatched layer
-clf()
-plot(H2Oinitfrac/1e-6, alt[2:end-1]/1e5, color="green",linewidth=5)
-plot(detachedlayer/1e-6, alt[2:end-1]/1e5, color="red",linewidth=2, linestyle="--")
-plot(H2Olowfrac/1e-6, alt[2:end-1]/1e5, color="blue",linewidth=2, linestyle="--")
-ylim(0, 100)
-xlabel("Volume Mixing Ratio [ppm]")
-ylabel("Altitude [km]")
-show()
+# clf()
+# plot(H2Oinitfrac/1e-6, alt[2:end-1]/1e5, color="green",linewidth=5)
+# plot(detachedlayer/1e-6, alt[2:end-1]/1e5, color="red",linewidth=2, linestyle="--")
+# plot(H2Olowfrac/1e-6, alt[2:end-1]/1e5, color="blue",linewidth=2, linestyle="--")
+# ylim(0, 100)
+# xlabel("Volume Mixing Ratio [ppm]")
+# ylabel("Altitude [km]")
+# show()
 
 # this computes the total water column in precipitable microns
 # n_col(molecules/cm2)/(molecules/mol)*(gm/mol)*(1cc/gm) = (cm)*(10^4μm/cm)
@@ -386,9 +367,9 @@ function speciesbcs(species)
 end
 
 
-##############################
-####DIFFUSION COEFFICIENTS####
-##############################
+################################################################################
+############################ DIFFUSION COEFFICIENTS ############################
+################################################################################
 
 function Keddy(n_current, z)
     # eddy diffusion coefficient, stolen from Krasnopolsky (1993).
@@ -417,9 +398,9 @@ Dcoef(z, species::Symbol, n_current) = Dcoef(Temp(z),n_tot(n_current, z),species
 thermaldiff(species) = get(Dict(:H=>-0.25,:H2=>-0.25,:HD=>-0.25,:D2=>-0.25,
                                 :He=>-0.25), species, 0)
 
-###############################
-##########TRANSPORT############
-###############################
+################################################################################
+################################## TRANSPORT ###################################
+################################################################################
 
 # scale height at a given altitude
 function scaleH(z, T::Float64, mm::Real)
@@ -669,9 +650,9 @@ function boundaryconditions(species, dz, n_current)
 end
 
 
-########################
-#######CHEMISTRY########
-########################
+################################################################################
+################################## CHEMISTRY ###################################
+################################################################################
 
 # TODO: again, the Any[] syntax might be removable once [[],[]] concatenation
 # is diabled rather than depracated
@@ -834,9 +815,9 @@ function chemical_jacobian(chemnetwork, transportnetwork, specieslist, dspeciesl
     return (ivec, jvec, Expr(:vcat, tvec...))
 end
 
-################################################
-########COMBINED CHEMISTRY AND TRANSPORT########
-################################################
+################################################################################
+####################### COMBINED CHEMISTRY AND TRANSPORT #######################
+################################################################################
 
 # We now have objects that return the list of indices and coefficients
 # for transport, assuming no other species in the atmosphere
@@ -1233,15 +1214,17 @@ function plotatm(n_current)
     clf()
     for sp in fullspecieslist
         plot(n_current[sp], alt[2:end-1]/1e5, color = speciescolor[sp],
-             linewidth = 4)
+             linewidth = 4, label=sp)
     end
     ylim(0, 200)
     xscale("log")
     xlim(1e-15, 1e18)
-    xticks(size = 40)
-    yticks(size = 40)
-    xlabel("Species concentration [/cm3]",size = 40)
-    ylabel("Altitude [km]",size=40)
+    xticks(size = 20)
+    yticks(size = 20)
+    xlabel("Species concentration [/cm3]",size = 25)
+    ylabel("Altitude [km]",size=25)
+    grid("on")
+    legend(bbox_to_anchor=[1.01,1],loc=2,borderaxespad=0)
 end
 
 function plotatm()
@@ -1249,9 +1232,9 @@ function plotatm()
 end
 
 
-####################################
-####PHOTOCHEMICAL CROSS SECTIONS####
-####################################
+################################################################################
+######################### PHOTOCHEMICAL CROSS SECTIONS #########################
+################################################################################
 
 # Change following line as needed depending on local machine
 xsecfolder="/home/mike/Documents/Mars/Photochemistry/Photochemical Data/From_Justin/uv/uvxsect/";
@@ -1707,19 +1690,24 @@ end
 
 function timeupdate(mytime)
     for i = 1:10
+        plotatm()
+        println("dt: ", mytime)
         update!(n_current, mytime)
     end
-    ## plotatm()
     ## show()
     ## yield()
 end
-
-## n_current[:H2O]=H2Oinitfrac.*map(z->n_tot(n_current, z),alt[2:end-1])
-## [timeupdate(t) for t in [10.0^(1.0*i) for i in -3:14]]
-## for i in 1:100
-##     update!(n_current, 1e14)
-## end
-## write_ncurrent(n_current,"converged_standardwater.h5")
+################################################################################
+############################### CONVERGENCE CODE ###############################
+################################################################################
+# Extra code to reach convergence to equilibrium over millions of years
+# STANDARD WATER CASE ----------------------------------------------------------
+# n_current[:H2O]=H2Oinitfrac.*map(z->n_tot(n_current, z),alt[2:end-1])
+# [timeupdate(t) for t in [10.0^(1.0*i) for i in -3:14]]
+# for i in 1:100
+#     update!(n_current, 1e14)
+# end
+# write_ncurrent(n_current,"converged_standardwater.h5")
 
 ## n_current[:H2O]=detachedlayer.*map(z->n_tot(n_current, z),alt[2:end-1])
 ## [timeupdate(t) for t in [10.0^(1.0*i) for i in -3:14]]

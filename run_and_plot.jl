@@ -103,7 +103,7 @@ end
     mydata = read(mydset)
     timelength = length(mydata["n_current"]["timelist"])+1
     close(mydset)
-  
+
     Hfluxes=fill(0.,timelength)
     n_current=read_ncurrent_from_file(readfile,string("n_current/init"))
     Hfluxes[1]=(n_current[:H][end]*speciesbcs(:H)[2,2]
@@ -144,47 +144,50 @@ end
 
 pmap(x->println(string("parmsvec[i][1]=",x[1],", parmsvec[i][2]=",x[2],", filename=",x[3])),[[p,f;] for (p,f) in zip(parmsvec,filenamevec)])
 
-##This runs the simulation for a year and returns
-## oneyeartimepts=logspace(log10(1),log10(3.14e7),1000)
-## oneyeartimediff=oneyeartimepts[2:end]-oneyeartimepts[1:end-1]
-## n_converged=get_ncurrent("converged_standardwater.h5")
-## n_oneyear=runwaterprofile(n_converged,80,60,oneyeartimediff,"one_year_response_to_80ppm_at_60km.h5")
-## n_return=runwaterprofile(n_oneyear,0.,60,oneyeartimediff,"one_year_response_to_80ppm_at_60km_return.h5")
+#This runs the simulation for a year and returns
+oneyeartimepts=logspace(log10(1),log10(3.14e7),1000)
+oneyeartimediff=oneyeartimepts[2:end]-oneyeartimepts[1:end-1]
+n_converged=get_ncurrent("converged_standardwater.h5")
+n_oneyear=runwaterprofile(n_converged,80,60,oneyeartimediff,"one_year_response_to_80ppm_at_60km.h5")
+n_return=runwaterprofile(n_oneyear,0.,60,oneyeartimediff,"one_year_response_to_80ppm_at_60km_return.h5")
 
 ##This runs the simulation for all added ppms and altitudes
-## pmap( x->runwaterprofile(n_current,x[1],x[2],timediff,x[3]),[[p,f;] for (p,f) in zip(parmsvec,filenamevec)])
-## pmap(get_all_rates_and_fluxes,filenamevec)
+pmap( x->runwaterprofile(n_current,x[1],x[2],timediff,x[3]),[[p,f;] for (p,f) in zip(parmsvec,filenamevec)])
+pmap(get_all_rates_and_fluxes,filenamevec)
 
 
-## This gets the H fluxes and water profiles for easy figure creation
-## Hfluxes=pmap(get_H_fluxes,filenamevec)
-## lhfl=length(Hfluxes[1,1])
-## writeHfluxes=fill(0.0,(length(waterppmvec),length(wateraltvec),lhfl+2))
-## for lp in 1:length(parmsvec)
-##     ippm=lp%length(waterppmvec)+1
-##     ialt=floor(Int,(lp-1)/length(waterppmvec))+1
-##     writeHfluxes[ippm,ialt,:]=[parmsvec[lp],Hfluxes[lp];]
-## end
-## function get_water_ppm(filename)
-##     n_file=read_ncurrent_from_file(filename,"n_current/init")
-##     waterppmvec=1e6*n_file[:H2O]./map(z->n_tot(n_file,z),alt[2:end-1])
-##     return waterppmvec
-## end
+# This gets the H fluxes and water profiles for easy figure creation
+Hfluxes=pmap(get_H_fluxes,filenamevec)
+lhfl=length(Hfluxes[1,1])
+writeHfluxes=fill(0.0,(length(waterppmvec),length(wateraltvec),lhfl+2))
+for lp in 1:length(parmsvec)
+    ippm=lp%length(waterppmvec)+1
+    ialt=floor(Int,(lp-1)/length(waterppmvec))+1
+    writeHfluxes[ippm,ialt,:]=[parmsvec[lp],Hfluxes[lp];]
+end
+function get_water_ppm(filename)
+    n_file=read_ncurrent_from_file(filename,"n_current/init")
+    waterppmvec=1e6*n_file[:H2O]./map(z->n_tot(n_file,z),alt[2:end-1])
+    return waterppmvec
+end
 
-## waterprofs=map(get_water_ppm,filenamevec)
-## writewaterprof=fill(0.0,(length(waterppmvec),length(wateraltvec),length(alt)-2+2))
-## for lp in 1:length(parmsvec)
-##     ippm=lp%length(waterppmvec)+1
-##     ialt=floor(Int,(lp-1)/length(waterppmvec))+1
-##     writewaterprof[ippm,ialt,:]=[parmsvec[lp],waterprofs[lp];]
-## end
+waterprofs=map(get_water_ppm,filenamevec)
+writewaterprof=fill(0.0,(length(waterppmvec),length(wateraltvec),length(alt)-2+2))
+for lp in 1:length(parmsvec)
+    ippm=lp%length(waterppmvec)+1
+    ialt=floor(Int,(lp-1)/length(waterppmvec))+1
+    writewaterprof[ippm,ialt,:]=[parmsvec[lp],waterprofs[lp];]
+end
 
-
-## h5write("./H_esc_flux_history.h5","fluxes/fluxvals",writeHfluxes)
-## h5write("./H_esc_flux_history.h5","fluxes/times",h5read("./ppm_20_alt_20.h5","n_current/timelist"))
-## h5write("./H_esc_flux_history.h5","waterprofs/ppm",writewaterprof)
-## h5write("./H_esc_flux_history.h5","waterprofs/alt",alt[2:end-1])
-
+# write out the H fluxes =======================================================
+println("Writing H esc file")
+hfile = "./H_esc_flux_history.h5"
+h5open(hfile, isfile(hfile) ? "r+" : "w") do file
+   write(file,"fluxes/fluxvals",writeHfluxes)
+   write(file,"fluxes/times",h5read("./ppm_20_alt_20.h5","n_current/timelist"))
+   write(file,"waterprofs/ppm",writewaterprof)
+   write(file,"waterprofs/alt",alt[2:end-1])
+end
 
 ##this runs the simulation for removing water from the system, to
 ##answer the final reviewer objection and show that an imbalance is
